@@ -7,7 +7,7 @@
 //
 // Modifications:
 //  2026-04-13	Created
-//  2026-05-14  Updated
+//  2026-05-16  Updated
 // ========================================================================
 
 // ========================================================================
@@ -55,8 +55,9 @@ EXTERN_C __declspec(code_seg("INIT")) NTSTATUS __stdcall DriverEntry(
 	// Write data into RO _KUSER_SHARED_DATA structure
 	BYTE byarrPayload[] = { 0x41, 0x41, 0x41, 0x41 };
 	QWORD qwKuserSharedData = 0xFFFFF78000000000ULL;
-	copy_memory_cr0_wp(reinterpret_cast<PVOID>(qwKuserSharedData), byarrPayload, sizeof(byarrPayload));
-	copy_memory_double_mapping(reinterpret_cast<PVOID>(qwKuserSharedData + 0x4ULL), byarrPayload, sizeof(byarrPayload));
+	copy_memory_cr0_wp(reinterpret_cast<PVOID>(qwKuserSharedData + 0x738ULL), byarrPayload, sizeof(byarrPayload));
+	copy_memory_double_mapping(reinterpret_cast<PVOID>(qwKuserSharedData + 0x73CULL), byarrPayload, sizeof(byarrPayload));
+	copy_memory_pte(reinterpret_cast<PVOID>(qwKuserSharedData + 0x740ULL), byarrPayload, sizeof(byarrPayload));
 
 	return STATUS_SUCCESS;
 }

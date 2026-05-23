@@ -2,7 +2,7 @@
 
 ## Version
 
-- `v1.0.0`
+- `v2.0.0`
 
 ## Brief
 
@@ -12,15 +12,24 @@
 - `CPL: 0`
 - `OS: Windows`
 - `Language: C`
-- Sample code that demonstrates two techniques for writing into read-only pages in kernel space using `CR0.WP` manipulation and `MDL` double mapping
+- Sample code that demonstrates three techniques for writing into read-only pages in kernel space using `CR0.WP` manipulation, `MDL` double mapping, and `PTE` manipulation
 
 ## Usage
 
 ```
+0: kd> vertarget
+Windows 10 Kernel Version 26100 MP (2 procs) Free x64
+Edition build lab: 26100.1.amd64fre.ge_release.240331-1435
+Kernel base = 0xfffff801`ece00000 PsLoadedModuleList = 0xfffff801`edcf5150
+Debug session time: Mon May 18 11:32:44.468 2026 (UTC - 4:00)
+System Uptime: 0 days 1:46:43.304
+
+0: kd> g
 [DBG]: +++ KernelWriteProtect.sys Loaded +++
-[DBG]: KernelWriteProtect.sys Built May 14 2026 18:20:42
-[DBG]: KernelWriteProtect: DriverObject = FFFF808F23410E20
+[DBG]: KernelWriteProtect.sys Built May 18 2026 11:31:17
+[DBG]: KernelWriteProtect: DriverObject = FFFFBD0FF0496E20
 [DBG]: KernelWriteProtect: RegistryPath = \REGISTRY\MACHINE\SYSTEM\ControlSet001\Services\KernelWriteProtect
+[DBG]: --- KernelWriteProtect.sys Unloaded ---
 Break instruction exception - code 80000003 (first chance)
 *******************************************************************************
 *                                                                             *
@@ -37,17 +46,16 @@ Break instruction exception - code 80000003 (first chance)
 *                                                                             *
 *******************************************************************************
 nt!DbgBreakPointWithStatus:
-fffff801`d1efb1b0 cc              int     3
-0: kd> !pte 0xFFFFF78000000000
-                                           VA fffff78000000000
-PXE at FFFFEFF7FBFDFF78    PPE at FFFFEFF7FBFEF000    PDE at FFFFEFF7FDE00000    PTE at FFFFEFFBC0000000
-contains 0000000000285063  contains 0000000000284063  contains 0000000000283063  contains 8A00000000282161
-pfn 285       ---DA--KWEV  pfn 284       ---DA--KWEV  pfn 283       ---DA--KWEV  pfn 282       -G-DA--KR-V
+fffff801`ed2fb1b0 cc              int     3
 
-0: kd> db 0xFFFFF78000000000 L8
-fffff780`00000000  41 41 41 41 41 41 41 41                          AAAAAAAA
-0: kd> g
-[DBG]: --- KernelWriteProtect.sys Unloaded ---
+0: kd> !pte 0xFFFFF78000000738
+                                           VA fffff78000000738
+PXE at FFFFF2793C9E4F78    PPE at FFFFF2793C9EF000    PDE at FFFFF2793DE00000    PTE at FFFFF27BC0000000
+contains 0000000000286063  contains 0000000000285063  contains 0000000000284063  contains 8A00000000283121
+pfn 286       ---DA--KWEV  pfn 285       ---DA--KWEV  pfn 284       ---DA--KWEV  pfn 283       -G--A--KR-V
+
+0: kd> db 0xFFFFF78000000738 LC
+fffff780`00000738  41 41 41 41 41 41 41 41-41 41 41 41              AAAAAAAAAAAA
 ```
 
 ## Tested OS Versions
@@ -60,3 +68,5 @@ fffff780`00000000  41 41 41 41 41 41 41 41                          AAAAAAAA
 2. [ac](https://github.com/donnaskiez/ac)
 3. [EfiGuard](https://github.com/Mattiwatti/EfiGuard)
 4. [kernelhook](https://github.com/adrianyy/kernelhook)
+5. [Exploit Development: Leveraging Page Table Entries for Windows Kernel Exploitation](https://connormcgarr.github.io/pte-overwrites/)
+6. [g_CiOptions in a Virtualized World](https://trustedsec.com/blog/g_cioptions-in-a-virtualized-world)
